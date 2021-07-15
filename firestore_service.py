@@ -1,4 +1,5 @@
 import firebase_admin
+import bcrypt
 from firebase_admin import credentials,firestore
 
 
@@ -23,6 +24,7 @@ class methods:
             n+=1
             a=t.to_dict()
             a['task_id']=t.id
+            a.pop('user_id')
             tasks_list[str(n)]=a
         return tasks_list
 
@@ -37,7 +39,7 @@ class methods:
 
     def updateTaskState(task_id):
         task=db.collection('tasks').document(task_id).get()
-        if task['status']=='pending':
+        if task.to_dict()['status']=='pending':
             return db.collection('tasks').document(task_id).update({'status': 'done'})
         return db.collection('tasks').document(task_id).update({'status': 'pending'})
 
@@ -45,8 +47,10 @@ class methods:
 
 
     def insertUser(user):
-        doc=db.collection('users').where('username','==',user['username'])
-        if doc is None:
+        doc=db.collection('users').where('username','==',user['username']).get()
+        hashed_password=bcrypt.hashpw(user['password'].encode('utf-8'), bcrypt.gensalt())
+        user['password']= hashed_password
+        if len(doc)==0:
             return db.collection('users').add({'username':user['username'],'password':user['password'],'name':user['name']})
         return None
 

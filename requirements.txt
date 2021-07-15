@@ -3,3 +3,4 @@ firebase-admin
 flask-restful
 flask-JWT
 flask-cors
+bcrypt
